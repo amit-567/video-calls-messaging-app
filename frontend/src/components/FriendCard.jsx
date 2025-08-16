@@ -1,7 +1,18 @@
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { acceptFriendRequest } from "../lib/api";
 import { LANGUAGE_TO_FLAG } from "../constants";
 
-const FriendCard = ({ friend }) => {
+const FriendCard = ({ friend, requestId, isPendingRequest }) => {
+  const queryClient = useQueryClient();
+  const { mutate: acceptRequest } = useMutation({
+    mutationFn: acceptFriendRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friendRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    },
+  });
+
   return (
     <div className="card bg-base-200 hover:shadow-md transition-shadow">
       <div className="card-body p-4">
@@ -24,9 +35,23 @@ const FriendCard = ({ friend }) => {
           </span>
         </div>
 
-        <Link to={`/chat/${friend._id}`} className="btn btn-outline w-full">
-          Message
-        </Link>
+        {isPendingRequest ? (
+          <div className="flex gap-2">
+            <button 
+              onClick={() => acceptRequest(requestId)}
+              className="btn btn-primary flex-1"
+            >
+              Accept Request
+            </button>
+            <Link to={`/chat/${friend._id}`} className="btn btn-outline">
+              Message
+            </Link>
+          </div>
+        ) : (
+          <Link to={`/chat/${friend._id}`} className="btn btn-outline w-full">
+            Message
+          </Link>
+        )}
       </div>
     </div>
   );
