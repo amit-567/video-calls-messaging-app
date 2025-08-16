@@ -45,6 +45,24 @@ const ChatPage = () => {
 
         const client = StreamChat.getInstance(STREAM_API_KEY);
 
+        // Set up event listener for new messages
+        client.on('message.new', event => {
+          // Only show notification if the message is not from the current user
+          if (event.user.id !== authUser._id) {
+            toast.custom((t) => (
+              <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} bg-base-200 shadow-lg rounded-lg pointer-events-auto flex p-4 max-w-md`}>
+                <div className="flex-1">
+                  <p className="font-medium">{event.user.name}</p>
+                  <p className="text-sm text-base-content/70">{event.message.text}</p>
+                </div>
+              </div>
+            ), {
+              duration: 4000,
+              position: 'top-right'
+            });
+          }
+        });
+
         await client.connectUser(
           {
             id: authUser._id,

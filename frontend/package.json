@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 10.52.249.104",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host 10.52.249.104"
   },
   "dependencies": {
     "@stream-io/video-react-sdk": "^1.14.4",

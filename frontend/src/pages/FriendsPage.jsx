@@ -1,10 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { getUserFriends, getFriendRequests } from "../lib/api";
 import FriendCard from "../components/FriendCard";
 import PageLoader from "../components/PageLoader";
 import NoFriendsFound from "../components/NoFriendsFound";
+import toast from "react-hot-toast";
 
 const FriendsPage = () => {
+  const previousRequests = useRef(0);
+  
   const { data: friends, isLoading: loadingFriends } = useQuery({
     queryKey: ["friends"],
     queryFn: getUserFriends,
@@ -13,7 +17,42 @@ const FriendsPage = () => {
   const { data: requests, isLoading: loadingRequests } = useQuery({
     queryKey: ["friendRequests"],
     queryFn: getFriendRequests,
+    refetchInterval: 10000, // Check for new requests every 10 seconds
   });
+
+  useEffect(() => {
+    // If we have requests data and the number of requests has increased
+    if (requests?.incomingReqs && requests.incomingReqs.length > previousRequests.current) {
+      // Get the new requests (requests that weren't there before)
+      const newRequests = requests.incomingReqs.slice(previousRequests.current);
+      
+      // Show notification for each new request
+      newRequests.forEach(request => {
+        toast.custom((t) => (
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} bg-base-200 shadow-lg rounded-lg pointer-events-auto flex p-4 max-w-md`}>
+            <div className="flex items-center gap-3">
+              <div className="avatar">
+                <div className="w-10 rounded-full">
+                  <img src={request.sender.profilePic} alt={request.sender.fullName} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">{request.sender.fullName}</p>
+                <p className="text-sm text-base-content/70">Sent you a friend request</p>
+              </div>
+            </div>
+          </div>
+        ), {
+          duration: 5000,
+          position: 'top-right'
+        });
+      });
+    }
+    // Update the previous count
+    if (requests?.incomingReqs) {
+      previousRequests.current = requests.incomingReqs.length;
+    }
+  }, [requests?.incomingReqs]);
 
   if (loadingFriends || loadingRequests) {
     return <PageLoader />;
