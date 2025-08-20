@@ -15,29 +15,13 @@ const PORT = process.env.PORT;
 
 const __dirname = path.resolve();
 
-// Configure CORS with specific options
-const corsOptions = {
-  origin: function(origin, callback) {
-    // Allow requests from localhost (both IPv4 and hostname) and your specific IP
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'http://10.52.249.104:5173'
-    ];
-    
-    // origin can be undefined in case of same-origin requests
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true, // allow cookies and authorization headers
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-};
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true, // allow frontend to send cookies
+  })
+);
 
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -53,7 +37,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
   connectDB();
 });
